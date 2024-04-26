@@ -1,8 +1,5 @@
 import os
 import onnx
-import numpy as np
-from PIL import Image
-from onnx import numpy_helper
 import onnxruntime as ort
 import tensorflow as tf
 import tf2onnx
@@ -10,17 +7,6 @@ import uuid
 import io
 
 class Model:
-    def get_image_input(self, file_name):
-        image = Image.open(file_name).convert('L')
-
-        image = image.resize((28, 28))
-
-        image_np = np.array(image).astype(np.float32)
-        image_np = image_np / 255.0
-        image_np = np.expand_dims(image_np, axis=0)
-
-        return image_np
-
     def extend_graph_outputs(self):
         # https://github.com/microsoft/onnxruntime/issues/1455
 

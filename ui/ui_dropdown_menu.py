@@ -62,14 +62,14 @@ class DropdownMenu:
 
         self.presets = {
             "From image file": ["files"],
-            "From dataset": ["dataset"]
+            "From CSV": ["textbox_csv"]
         }
 
         self.components = {
             "dropdown_preset": gr.Dropdown(choices=list(self.presets.keys()),
                                            label="Select the type of data you wish to upload", interactive=True),
             "files": gr.File(file_count="multiple", interactive=True),
-            "dataset": gr.Dropdown(choices=["a", "b", "c"], label="Select the dataset", interactive=True)
+            "textbox_csv": gr.Textbox(label="CSV", interactive=True),
         }
 
         self.state = gr.State({})

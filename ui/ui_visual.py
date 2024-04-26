@@ -1,8 +1,7 @@
 import json
 import gradio as gr
-import numpy as np
-from PIL import Image
 
+from engine.inputs import *
 from engine.onnx_encoder import ONNXEncoder
 from ui import symbols, shared
 from ui.canvas_component import CanvasComponent
@@ -18,8 +17,12 @@ class VisualTab:
         inputs = {}
         for input_name in state:
             if DropdownMenu.get_preset(state, input_name) == "From image file":
-                inputs[input_name] = model.get_image_input(
+                inputs[input_name] = get_image_input(
                     state[input_name]["files"][0]
+                )
+            if DropdownMenu.get_preset(state, input_name) == 'From CSV':
+                inputs[input_name] = get_csv_input(
+                    state[input_name]["textbox_csv"]
                 )
 
         node_names = [x.name for x in model.session.get_outputs()]
