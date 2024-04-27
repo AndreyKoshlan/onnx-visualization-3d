@@ -1,7 +1,6 @@
 import gradio as gr
 
-from ui import shared
-
+from engine.inputs import ImageMode
 
 class DropdownMenu:
     @staticmethod
@@ -61,13 +60,15 @@ class DropdownMenu:
         )
 
         self.presets = {
-            "From image file": ["files"],
+            "From image file": ["files", "dropdown_image_type"],
             "From CSV": ["textbox_csv"]
         }
 
         self.components = {
             "dropdown_preset": gr.Dropdown(choices=list(self.presets.keys()),
                                            label="Select the type of data you wish to upload", interactive=True),
+            "dropdown_image_type": gr.Dropdown(choices=[mode.value for mode in ImageMode],
+                                               label="Select image mode", interactive=True),
             "files": gr.File(file_count="multiple", interactive=True),
             "textbox_csv": gr.Textbox(label="CSV", interactive=True),
         }
