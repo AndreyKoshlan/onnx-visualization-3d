@@ -11,7 +11,7 @@ class Main:
         input_names = [x.name for x in model.session.get_inputs()]
 
         return [
-            gr.Dropdown(value=None, choices=input_names),
+            gr.Dropdown(value=input_names[0], choices=input_names),
             {},
             uuid
         ]
