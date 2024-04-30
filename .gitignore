@@ -1,6 +1,3 @@
-build.bat
-test.bat
-
 models/
 
 ui/canvas_component/templates/
