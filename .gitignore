@@ -1,4 +1,5 @@
-models/
+models/*
+!models/mnist.onnx
 
 ui/canvas_component/templates/
 src/canvas_component/backend/gradio_canvas_component/templates/
