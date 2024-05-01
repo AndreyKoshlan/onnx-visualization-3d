@@ -10,9 +10,9 @@ export class Layer {
 
     getPosition(offset: BABYLON.Vector3, x: number, y: number, z: number): [number, number, number] {
         return [
-            this.position.x + (x * 2),
-            this.position.y - (y * 2),
-            this.position.z + (z * 2)
+            offset.x + (x * 2),
+            offset.y - (y * 2),
+            offset.z + (z * 2)
         ];
     }
 

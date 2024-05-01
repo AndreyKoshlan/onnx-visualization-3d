@@ -2,7 +2,6 @@ import numpy as np
 import io
 from PIL import Image
 
-from engine.models import Model
 from ui.data_classes.component_keys import component_keys
 from ui.data_classes.image_mode import image_mode
 from ui.data_classes.preset_keys import preset_keys
