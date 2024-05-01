@@ -40,6 +40,13 @@ class Model:
 
         self.extend_graph_outputs()
 
+    def get_shape(self, input_name):
+        inputs = self.session.get_inputs()
+        for input_arg in inputs:
+            if input_arg.name == input_name:
+                return input_arg.shape
+        return None
+
     def __init__(self, path):
         self.session = None
         self.onnx_model = None

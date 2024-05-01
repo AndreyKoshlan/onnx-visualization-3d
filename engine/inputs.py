@@ -2,12 +2,13 @@ import numpy as np
 import io
 from PIL import Image
 
+from engine.models import Model
 from ui.data_classes.component_keys import component_keys
 from ui.data_classes.image_mode import image_mode
 from ui.data_classes.preset_keys import preset_keys
 from ui.dropdown_menu.preset_dropdown_menu import PresetDropdownMenu
 
-def get_image_input(file_name, mode):
+def get_image_input(file_name, shape, mode):
     image = Image.open(file_name)
 
     if mode == image_mode.LOAD_AS_RGB:
@@ -19,7 +20,7 @@ def get_image_input(file_name, mode):
     elif mode == image_mode.LOAD_GRAYSCALE_AS_SINGLE_CHANNEL:
         image = image.convert('L')
 
-    image = image.resize((28, 28))
+    image = image.resize((shape[1], shape[2]))
 
     image_np = np.array(image).astype(np.float32)
     image_np = image_np / 255.0
@@ -41,7 +42,7 @@ def get_csv_input(csv_string):
     return csv_np
 
 
-def get_input_by_state(input_name, state):
+def get_input_by_state(input_name, shape, state):
     input_state = state[input_name]
 
     def get_image_type():
@@ -50,6 +51,6 @@ def get_input_by_state(input_name, state):
     preset = input_state[PresetDropdownMenu.DROPDOWN_PRESET_NAME]
     match preset:
         case preset_keys.FROM_IMAGE_FILE:
-            return get_image_input(input_state[component_keys.FILES][0], get_image_type())
+            return get_image_input(input_state[component_keys.FILES][0], shape, get_image_type())
         case preset_keys.FROM_CSV:
             return get_csv_input(input_state[component_keys.TEXTBOX_CSV])

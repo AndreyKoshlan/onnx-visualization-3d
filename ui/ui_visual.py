@@ -18,6 +18,7 @@ class VisualTab:
         for input_name in state:
             inputs[input_name] = get_input_by_state(
                 input_name,
+                model.get_shape(input_name),
                 state
             )
 
