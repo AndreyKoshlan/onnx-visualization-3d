@@ -4,6 +4,7 @@ import ELK, {ElkNode} from 'elkjs/lib/elk.bundled.js'
 import {Data, MappingType, NodesType} from "./types";
 import {Layer} from "./layer";
 import {getLayersY} from "./layer-utils";
+import {ElkExtendedEdge} from "elkjs/lib/elk-api";
 
 export class Model {
     DISTANCE = 20;
@@ -14,7 +15,7 @@ export class Model {
     outputMapping: Record<string, string[]>;
 
     layers: Record<string, Layer>;
-    layout: ElkNode;
+    layout!: ElkNode;
 
     createNodeMapping(nodes: NodesType, mappingType: MappingType): Record<string, string[]> {
         const nodeMapping: Record<string, string[]> = {};
@@ -42,8 +43,8 @@ export class Model {
                 'elk.algorithm': 'layered',
                 'elk.direction': 'DOWN'
             },
-            children: [],
-            edges: []
+            children: [] as ElkNode[],
+            edges: [] as ElkExtendedEdge[]
         };
 
         Object.keys(this.layers).forEach(name => {
@@ -67,9 +68,9 @@ export class Model {
     }
 
     createLayers(data: Data): Record<string, Layer> {
-        const layers = {};
+        const layers: Record<string, Layer> = {};
 
-        const addLayers = (nodes) => {
+        const addLayers = (nodes: any) => {
             Object.keys(nodes).forEach(name => {
                 layers[name] = new Layer(this.scene, nodes[name]);
             });
@@ -84,7 +85,7 @@ export class Model {
     visualize() {
         const positionsY = getLayersY(this.data, this.inputMapping, this.outputMapping, this.layers);
 
-        this.layout.children.forEach(node => {
+        this.layout?.children?.forEach(node => {
             const name = node.id;
             this.layers[name].position = new BABYLON.Vector3(node.x, positionsY[name], node.y);
             this.layers[name].visualize();
