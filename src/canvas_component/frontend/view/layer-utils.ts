@@ -131,7 +131,7 @@ export function getLayerCenterY(layerName: string, inputs: string[], layers: Rec
     inputs.forEach((inputName) => {
         const inputLayer = layers[inputName];
         if (inputLayer && inputName in layersY) {
-            totalY += layersY[inputName] + (inputLayer.getSize()[1] / 2);
+            totalY += layersY[inputName] - (inputLayer.getSize()[1] / 2);
             count++;
         }
     });
@@ -142,7 +142,7 @@ export function getLayerCenterY(layerName: string, inputs: string[], layers: Rec
 
     totalY /= count;
 
-    return totalY - (currentLayer.getSize()[1] / 2);
+    return totalY + (currentLayer.getSize()[1] / 2);
 }
 
 export function getLayersY(

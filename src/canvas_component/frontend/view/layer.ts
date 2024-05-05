@@ -34,37 +34,54 @@ export class Layer {
     }
 
     getSize(): [number, number, number] {
-        return this.getPosition(
-            new BABYLON.Vector3(0, 0, 0),
-            this.shape[0] - 1,
-            this.shape[1] - 1,
-            this.shape[2] - 1
-        );
+        let maxX = 0, maxY = 0, maxZ = 0;
+
+        for (const element of this.iterate()) {
+            const [x_pos, y_pos, z_pos] = element.positionRelative;
+
+            maxX = Math.max(maxX, x_pos);
+            maxY = Math.max(maxY, -y_pos);
+            maxZ = Math.max(maxZ, z_pos);
+        }
+
+        return [maxX, maxY, maxZ];
+    }
+
+    *iterate() {
+        const zeroPoint = new BABYLON.Vector3(0, 0, 0);
+
+        let index = 0;
+        for (let sliceIndex = 0; sliceIndex < this.reshapedArray.length; sliceIndex++) {
+            for (let y = 0; y < this.reshapedArray[sliceIndex].length; y++) {
+                for (let x = 0; x < this.reshapedArray[sliceIndex][y].length; x++) {
+                    yield {
+                        value: this.reshapedArray[sliceIndex][y][x],
+                        position: this.getPosition(this.position, sliceIndex, y, x),
+                        positionRelative: this.getPosition(zeroPoint, sliceIndex, y, x),
+                        indices: [sliceIndex, y, x],
+                        index: index
+                    };
+                    index += 1;
+                }
+            }
+        }
     }
 
     visualize() {
-        const reshapedArray = this.reshapedArray;
-
         let numInstances = getTotalValuesCount(this.reshapedArray);
         const matricesBuffer = new Float32Array(16 * numInstances);
         const colorBuffer = new Float32Array(4 * numInstances);
 
-        let index = 0;
-        for (let sliceIndex = 0; sliceIndex < reshapedArray.length; sliceIndex++) {
-            for (let y = 0; y < reshapedArray[sliceIndex].length; y++) {
-                for (let x = 0; x < reshapedArray[sliceIndex][y].length; x++) {
-                    const [x_pos, y_pos, z_pos] = this.getPosition(this.position, sliceIndex, y, x);
+        for (const element of this.iterate()) {
+            const {value, index} = element;
+            const [xPos, yPos, zPos] = element.position;
 
-                    const matrix = BABYLON.Matrix.Translation(x_pos, y_pos, z_pos);
-                    matrix.copyToArray(matricesBuffer, index * 16);
+            const matrix = BABYLON.Matrix.Translation(xPos, yPos, zPos);
+            matrix.copyToArray(matricesBuffer, index * 16);
 
-                    let intensity = this.reshapedArray[sliceIndex][y][x];
-                    intensity = Math.max(0, Math.min(1, intensity));
-                    colorBuffer.set([intensity, intensity, intensity, 1], index * 4);
-
-                    index += 1
-                }
-            }
+            let intensity = value;
+            intensity = Math.max(0, Math.min(1, intensity));
+            colorBuffer.set([intensity, intensity, intensity, 1], index * 4);
         }
 
         this.cube.thinInstanceSetBuffer("matrix", matricesBuffer, 16);
