@@ -1,5 +1,6 @@
 import {Layer} from "./layer";
 import {Data} from "./types";
+import {iterateNodeBFS} from "./graph";
 
 export function getArrayShape(arr: any[]): number[] {
     if (!Array.isArray(arr)) {
@@ -147,39 +148,15 @@ export function getLayerCenterY(layerName: string, inputs: string[], layers: Rec
 
 export function getLayersY(
     data: Data,
-    inputMapping: Record<string, string[]>,
-    outputMapping: Record<string, string[]>,
     layers: Record<string, Layer>): Record<string, number>
 {
     const layersY: Record<string, number> = {};
-    const queue: string[] = [];
 
-    queue.push(...Object.keys(data.inputs));
-
-    let index = 0;
-    while (index < queue.length) {
-        const layerName = queue[index];
-        const currentNodes = outputMapping[layerName];
-        const nextNodes = inputMapping[layerName];
-
-        if (nextNodes !== undefined) {
-            nextNodes.forEach((nodeName) => {
-                const outputs = data.graph.nodes[nodeName].outputs;
-                queue.push(...outputs);
-            });
-        }
-
-        const inputLayers: string[] = [];
-
-        if (currentNodes !== undefined) {
-            currentNodes.forEach((nodeName) => {
-                inputLayers.push(...data.graph.nodes[nodeName].inputs);
-            });
-        }
+    for (const element of iterateNodeBFS(data)) {
+        const { nodeName, layerName } = element;
+        const inputLayers = data.graph.nodes[nodeName].inputs;
 
         layersY[layerName] = getLayerCenterY(layerName, inputLayers, layers, layersY);
-
-        index++;
     }
 
     return layersY;

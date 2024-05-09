@@ -1,39 +1,22 @@
 import * as BABYLON from 'babylonjs';
 import ELK, {ElkNode} from 'elkjs/lib/elk.bundled.js'
+import {ElkExtendedEdge} from "elkjs/lib/elk-api";
 
-import {Data, MappingType, NodesType} from "./types";
+import {Data} from "./types";
 import {Layer} from "./layer";
 import {getLayersY} from "./layer-utils";
-import {ElkExtendedEdge} from "elkjs/lib/elk-api";
+import {Connection, ConnectionType} from "./connection";
+import {getInitializerValue, iterateAllNodesIO} from "./graph";
 
 export class Model {
     DISTANCE = 20;
     scene: BABYLON.Scene;
     data: Data;
     position: BABYLON.Vector3;
-    inputMapping: Record<string, string[]>;
-    outputMapping: Record<string, string[]>;
 
     layers: Record<string, Layer>;
+    connections: Connection[];
     layout!: ElkNode;
-
-    createNodeMapping(nodes: NodesType, mappingType: MappingType): Record<string, string[]> {
-        const nodeMapping: Record<string, string[]> = {};
-
-        for (const nodeName in nodes) {
-            if (nodes.hasOwnProperty(nodeName)) {
-                const nodeDetails = nodes[nodeName];
-                nodeDetails[mappingType].forEach(connection => {
-                    if (!nodeMapping[connection]) {
-                        nodeMapping[connection] = [];
-                    }
-                    nodeMapping[connection].push(nodeName);
-                });
-            }
-        }
-
-        return nodeMapping;
-    }
 
     getLayoutFromOnnxGraph(): Promise<ElkNode> {
         const elk = new ELK();
@@ -47,22 +30,15 @@ export class Model {
             edges: [] as ElkExtendedEdge[]
         };
 
-        Object.keys(this.layers).forEach(name => {
+        for (const name in this.layers) {
             const size = this.layers[name].getSize();
             graph.children.push({ id: name, width: size[0], height: 2 });
-        });
+        }
 
-        Object.keys(this.data.graph.nodes).forEach(nodeName => {
-            const node = this.data.graph.nodes[nodeName];
-            node.inputs.forEach(inputName => {
-                if (!(inputName in this.layers)) return;
-
-                node.outputs.forEach(outputName => {
-                    if (!(outputName in this.layers)) return;
-                    graph.edges.push({ id: inputName+outputName, sources: [inputName], targets: [outputName] } );
-                });
-            });
-        });
+        for (const element of iterateAllNodesIO(this.data, this.layers)) {
+            const { inputName, outputName } = element;
+            graph.edges.push({ id: inputName+outputName, sources: [inputName], targets: [outputName] } );
+        }
 
         return elk.layout(graph);
     }
@@ -71,9 +47,9 @@ export class Model {
         const layers: Record<string, Layer> = {};
 
         const addLayers = (nodes: any) => {
-            Object.keys(nodes).forEach(name => {
+            for (const name in nodes) {
                 layers[name] = new Layer(this.scene, nodes[name]);
-            });
+            }
         };
 
         addLayers(data.inputs);
@@ -82,24 +58,54 @@ export class Model {
         return layers;
     }
 
-    visualize() {
-        const positionsY = getLayersY(this.data, this.inputMapping, this.outputMapping, this.layers);
+    createConnections(data: Data): Connection[] {
+        const connections: Connection[] = [];
 
-        this.layout?.children?.forEach(node => {
-            const name = node.id;
-            this.layers[name].position = new BABYLON.Vector3(node.x, positionsY[name], node.y);
-            this.layers[name].visualize();
-        });
+        for (const element of iterateAllNodesIO(this.data, this.layers)) {
+            const { inputName, outputName, nodeName } = element;
+
+            const inputLayer = this.layers[inputName];
+            const outputLayer = this.layers[outputName];
+            const node = data.graph.nodes[nodeName];
+
+            const initializer = getInitializerValue(this.data, node);
+            if (!initializer) {
+                console.log(`Initializer not found for node: ${nodeName}`);
+                continue;
+            }
+
+            const type: ConnectionType = Connection.getType(node.operation_type);
+            connections.push(
+                new Connection(this.scene, initializer, inputLayer, outputLayer, type)
+            );
+        }
+
+        return connections;
+    }
+
+    visualize() {
+        const positionsY = getLayersY(this.data, this.layers);
+
+        if (this.layout?.children) {
+            for (const node of this.layout.children) {
+                const name = node.id;
+                this.layers[name].position = new BABYLON.Vector3(node.x, positionsY[name], node.y);
+                this.layers[name].visualize();
+            }
+        }
+
+        for (const connection of this.connections) {
+            connection.visualize();
+        }
     }
 
     constructor(scene: BABYLON.Scene, position: BABYLON.Vector3, data: Data) {
         this.scene = scene;
         this.data = data;
         this.position = new BABYLON.Vector3(position.x, position.y, position.z);
-        this.inputMapping = this.createNodeMapping(data.graph.nodes, MappingType.Inputs);
-        this.outputMapping = this.createNodeMapping(data.graph.nodes, MappingType.Outputs);
 
         this.layers = this.createLayers(data);
+        this.connections = this.createConnections(data);
         this.getLayoutFromOnnxGraph().then((layout) => {
             this.layout = layout;
 

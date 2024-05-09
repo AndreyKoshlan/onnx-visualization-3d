@@ -61,14 +61,30 @@ export class Layer {
                         indices: [sliceIndex, y, x],
                         index: index
                     };
-                    index += 1;
+                    index++;
                 }
             }
         }
     }
 
+    getValuesCountInBatch(): number {
+        if (Array.isArray(this.reshapedArray[0])) {
+            return getTotalValuesCount(this.reshapedArray[0]);
+        } else {
+            if (Array.isArray(this.reshapedArray)) {
+                return getTotalValuesCount(this.reshapedArray);
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    getValuesCount() {
+        return getTotalValuesCount(this.reshapedArray);
+    }
+
     visualize() {
-        let numInstances = getTotalValuesCount(this.reshapedArray);
+        let numInstances = this.getValuesCount();
         const matricesBuffer = new Float32Array(16 * numInstances);
         const colorBuffer = new Float32Array(4 * numInstances);
 
