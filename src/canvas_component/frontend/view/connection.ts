@@ -22,17 +22,17 @@ export class Connection {
 
     *iterateFullyConnected() {
         const inputDim = this.inputLayer.getValuesCountInBatch();
-        const outputDim = this.outputLayer.getValuesCountInBatch()
-        console.log(inputDim, outputDim, this.array.length, this.array[0].length);
-        const isShapeMatch = (this.array[0] !== undefined) && (this.array.length == inputDim) && (this.array[0].length == outputDim)
+        const outputDim = this.outputLayer.getValuesCountInBatch();
+        const isShapeMatch = this.array[0] && this.array.length == inputDim && this.array[0].length == outputDim;
 
         let index = 0;
         for (const inputElement of this.inputLayer.iterate()) {
             for (const outputElement of this.outputLayer.iterate()) {
+                const value = isShapeMatch ?
+                    this.array[inputElement.indices[1] * inputElement.indices[2]][outputElement.indices[1]*outputElement.indices[2]]
+                    : 0.5;
                 yield {
-                    value: isShapeMatch ?
-                        this.array[inputElement.indices[1] * inputElement.indices[2]][outputElement.indices[1]*outputElement.indices[2]]
-                        : 0.5,
+                    value: value,
                     input: inputElement,
                     output: outputElement,
                     index: index

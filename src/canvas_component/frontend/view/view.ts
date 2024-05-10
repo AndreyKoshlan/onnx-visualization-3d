@@ -5,10 +5,10 @@ import {Data} from "./types";
 export class View {
     canvas: HTMLCanvasElement;
     engine: BABYLON.Engine;
-    scene: BABYLON.Scene;
-    camera: BABYLON.Camera;
-    light: BABYLON.Light;
-    model: Model;
+    scene!: BABYLON.Scene;
+    camera!: BABYLON.Camera;
+    light!: BABYLON.Light;
+    model!: Model;
 
     private createScene() {
         this.scene = new BABYLON.Scene(this.engine);
@@ -36,17 +36,20 @@ export class View {
 
     setData(data: Data) {
         console.log(data);
+
+        this.model?.dispose();
         this.model = new Model(
             this.scene,
             new BABYLON.Vector3(0, 0, 0),
             data
         );
+
         this.engine.resize();
     }
 
     constructor(canvas: HTMLCanvasElement) {
-        this.canvas = canvas
+        this.canvas = canvas;
         this.engine = new BABYLON.Engine(canvas, true);
-        this.createScene()
+        this.createScene();
     }
 }

@@ -99,6 +99,15 @@ export class Model {
         }
     }
 
+    dispose() {
+        for (const layerName in this.layers) {
+            this.layers[layerName].cube.dispose();
+        }
+        for (const connection of this.connections) {
+            connection.cube.dispose();
+        }
+    }
+
     constructor(scene: BABYLON.Scene, position: BABYLON.Vector3, data: Data) {
         this.scene = scene;
         this.data = data;
