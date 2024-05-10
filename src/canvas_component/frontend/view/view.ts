@@ -6,7 +6,7 @@ export class View {
     canvas: HTMLCanvasElement;
     engine: BABYLON.Engine;
     scene!: BABYLON.Scene;
-    camera!: BABYLON.Camera;
+    camera!: BABYLON.ArcRotateCamera;
     light!: BABYLON.Light;
     model!: Model;
 
@@ -18,7 +18,7 @@ export class View {
             Math.PI / 2,
             Math.PI / 2,
             2,
-            new BABYLON.Vector3(32, -32, 64),
+            BABYLON.Vector3.Zero(),
             this.scene
         );
         this.camera.attachControl(this.canvas, true);
@@ -40,8 +40,9 @@ export class View {
         this.model?.dispose();
         this.model = new Model(
             this.scene,
-            new BABYLON.Vector3(0, 0, 0),
-            data
+            BABYLON.Vector3.Zero(),
+            data,
+            () => this.camera.target = this.model.getCenter()
         );
 
         this.engine.resize();

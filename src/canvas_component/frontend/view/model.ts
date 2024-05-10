@@ -18,6 +18,36 @@ export class Model {
     connections: Connection[];
     layout!: ElkNode;
 
+    dispose() {
+        for (const layerName in this.layers) {
+            this.layers[layerName].cube.dispose();
+        }
+        for (const connection of this.connections) {
+            connection.cube.dispose();
+        }
+    }
+
+    getCenter(): BABYLON.Vector3 {
+        let sumPosition = BABYLON.Vector3.Zero();
+        let layerCount = 0;
+
+        for (const layerName in this.layers) {
+            const layerPosition = this.layers[layerName].position;
+            const layerSize = this.layers[layerName].getSize();
+
+            const layerCenter = layerPosition.add(new BABYLON.Vector3(
+                layerSize[0] / 2,
+                layerSize[1] / 2,
+                layerSize[2] / 2
+            ));
+
+            sumPosition = sumPosition.add(layerCenter);
+            layerCount++;
+        }
+
+        return sumPosition.scale(1 / layerCount);
+    }
+
     getLayoutFromOnnxGraph(): Promise<ElkNode> {
         const elk = new ELK();
         const graph = {
@@ -99,16 +129,7 @@ export class Model {
         }
     }
 
-    dispose() {
-        for (const layerName in this.layers) {
-            this.layers[layerName].cube.dispose();
-        }
-        for (const connection of this.connections) {
-            connection.cube.dispose();
-        }
-    }
-
-    constructor(scene: BABYLON.Scene, position: BABYLON.Vector3, data: Data) {
+    constructor(scene: BABYLON.Scene, position: BABYLON.Vector3, data: Data, callback: () => void) {
         this.scene = scene;
         this.data = data;
         this.position = new BABYLON.Vector3(position.x, position.y, position.z);
@@ -119,6 +140,8 @@ export class Model {
             this.layout = layout;
 
             this.visualize();
+
+            callback();
         });
     }
 }
