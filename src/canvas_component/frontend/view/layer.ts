@@ -3,7 +3,7 @@ import {getArrayShape, getDepth, getTotalValuesCount, reshapeTo3D} from "./layer
 
 export class Layer {
     CUBE_SIZE = 1;
-    CUBE_OFFSET = 2;
+    CUBE_OFFSET = 1.5;
     SLICE_OFFSET = 4;
 
     scene: BABYLON.Scene;
@@ -48,7 +48,7 @@ export class Layer {
     }
 
     *iterate() {
-        const zeroPoint = new BABYLON.Vector3(0, 0, 0);
+        const zeroPoint = BABYLON.Vector3.Zero();
 
         let index = 0;
         for (let sliceIndex = 0; sliceIndex < this.reshapedArray.length; sliceIndex++) {
@@ -124,7 +124,7 @@ export class Layer {
 
     constructor(scene: BABYLON.Scene, array: any[]) {
         this.scene = scene;
-        this.position = new BABYLON.Vector3(0, 0, 0);
+        this.position = BABYLON.Vector3.Zero();
         this.cube = BABYLON.MeshBuilder.CreateBox("value", { size: this.CUBE_SIZE }, scene);
 
         this.reshapedArray = this.getReshapedArray(array);

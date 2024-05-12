@@ -34,6 +34,12 @@ export class View {
         });
     }
 
+    adjustCamera() {
+        const center = this.model.getCenter();
+        this.camera.target = center;
+        this.camera.radius = Math.max(center.x, center.y, center.z) * 3;
+    }
+
     setData(data: Data) {
         console.log(data);
 
@@ -42,7 +48,7 @@ export class View {
             this.scene,
             BABYLON.Vector3.Zero(),
             data,
-            () => this.camera.target = this.model.getCenter()
+            this.adjustCamera.bind(this)
         );
 
         this.engine.resize();

@@ -71,5 +71,5 @@ export function* iterateNodeBFS(data: Data) {
 export function getInitializerValue(data: Data, node: NodeType): any {
     const inputs = node.inputs;
     const initializerName = inputs.find(input => data.graph.initializers.hasOwnProperty(input));
-    return initializerName ? data.graph.initializers[initializerName].array : undefined;
+    return initializerName ? data.graph.initializers[initializerName].array : [];
 }

@@ -9,7 +9,6 @@ import {Connection, ConnectionType} from "./connection";
 import {getInitializerValue, iterateAllNodesIO} from "./graph";
 
 export class Model {
-    DISTANCE = 20;
     scene: BABYLON.Scene;
     data: Data;
     position: BABYLON.Vector3;
@@ -88,20 +87,19 @@ export class Model {
         return layers;
     }
 
-    createConnections(data: Data): Connection[] {
+    createConnections(data: Data, layers: Record<string, Layer>): Connection[] {
         const connections: Connection[] = [];
 
-        for (const element of iterateAllNodesIO(this.data, this.layers)) {
+        for (const element of iterateAllNodesIO(data, layers)) {
             const { inputName, outputName, nodeName } = element;
 
-            const inputLayer = this.layers[inputName];
-            const outputLayer = this.layers[outputName];
+            const inputLayer = layers[inputName];
+            const outputLayer = layers[outputName];
             const node = data.graph.nodes[nodeName];
 
-            const initializer = getInitializerValue(this.data, node);
-            if (!initializer) {
+            const initializer = getInitializerValue(data, node);
+            if (initializer.length === 0) {
                 console.log(`Initializer not found for node: ${nodeName}`);
-                continue;
             }
 
             const type: ConnectionType = Connection.getType(node.operation_type);
@@ -135,7 +133,7 @@ export class Model {
         this.position = new BABYLON.Vector3(position.x, position.y, position.z);
 
         this.layers = this.createLayers(data);
-        this.connections = this.createConnections(data);
+        this.connections = this.createConnections(data, this.layers);
         this.getLayoutFromOnnxGraph().then((layout) => {
             this.layout = layout;
 

@@ -48,7 +48,7 @@ export class Connection {
         for (const inputElement of this.inputLayer.iterate()) {
             const outputElement = outputIterator.next().value;
             yield {
-                value: 1,
+                value: Math.abs(inputElement.value - outputElement!!.value),
                 input: inputElement,
                 output: outputElement!!,
                 index: index
@@ -121,7 +121,7 @@ export class Connection {
             let intensity = value;
             intensity = Math.max(0, Math.min(1, intensity));
 
-            if (intensity >= 0.1) {
+            if (this.type !== ConnectionType.FullyConnected || intensity >= 0.1) {
                 matrix.copyToArray(matricesBuffer, bufferIndex * 16);
                 colorBuffer.set([intensity, intensity, intensity, 1], bufferIndex * 4);
                 bufferIndex++;
@@ -134,8 +134,8 @@ export class Connection {
     }
 
     static getType(name: string) {
-        const fullyConnected = ["MatMul", "Softmax"];
-        const oneToOne = ["Reshape", "Relu", "Add"];
+        const fullyConnected = ["MatMul"];
+        const oneToOne = ["Reshape", "Softmax", "Relu", "Add"];
         if (fullyConnected.includes(name)) {
             return ConnectionType.FullyConnected;
         }
