@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 
 @dataclass
-class ComponentKeys:
+class VisualComponentKeys:
     DROPDOWN_IMAGE_TYPE: str = "dropdown_image_type"
     FILES: str = "files"
     TEXTBOX_CSV: str = "textbox_csv"
 
 
-component_keys = ComponentKeys()
+visual_component_keys = VisualComponentKeys()

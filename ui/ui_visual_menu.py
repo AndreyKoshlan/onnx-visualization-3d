@@ -1,12 +1,12 @@
 from dataclasses import asdict
 import gradio as gr
 
-from ui.data_classes.component_keys import component_keys
+from ui.data_classes.visual_component_keys import visual_component_keys as component_keys
 from ui.data_classes.image_mode import image_mode
-from ui.data_classes.preset_keys import preset_keys
+from ui.data_classes.visual_preset_keys import visual_preset_keys as preset_keys
 from ui.dropdown_menu.preset_dropdown_menu import PresetDropdownMenu
 
-class DropdownMenu(PresetDropdownMenu):
+class VisualMenu(PresetDropdownMenu):
     @staticmethod
     def create_components():
         return {

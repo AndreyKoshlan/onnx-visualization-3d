@@ -45,8 +45,7 @@ class BaseDropdownMenu:
                 [self.state, self.dropdown_input] + list(self.components_dict.values()),
                 self.state
             )
-            if isinstance(self.components_dict[key], gr.Dropdown):
-                self.components_dict[key].elem_classes = ["ui-dropdown"]
+            self.components_dict[key].elem_classes = ["menu-element"]
 
     def __init__(self):
         self.components_dict = {}
@@ -54,7 +53,7 @@ class BaseDropdownMenu:
         self.dropdown_input = gr.Dropdown(
             None,
             label="Select neural network input",
-            elem_classes=["ui-dropdown"],
+            elem_classes=["menu-element"],
             interactive=True
         )
 

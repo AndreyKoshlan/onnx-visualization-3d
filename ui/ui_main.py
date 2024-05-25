@@ -1,31 +1,15 @@
 import gradio as gr
 from pathlib import Path
-from ui import ui_toolbar, ui_model, ui_visual, shared
-
+from ui import ui_toolbar, ui_model, ui_visual, ui_train
 
 class Main:
-    @staticmethod
-    def select_model(path):
-        uuid = path.split("| ")[-1]
-        model = shared.model_list.get_by_uuid(uuid)
-        input_names = [x.name for x in model.session.get_inputs()]
-
-        return [
-            gr.Dropdown(value=input_names[0], choices=input_names),
-            {},
-            uuid
-        ]
-
-    @staticmethod
-    def get_dropdown_for_loaded_models():
-        return gr.Dropdown(shared.model_list.get_loaded_model_paths_and_uuid())
-
     def __init__(self):
         with open(Path(__file__).resolve().parent / "../css/main.css", "r") as f:
             css = f.read()
 
         with gr.Blocks(css=css) as self.demo:
             self.selected_model = gr.State()
+            self.selected_train_model = gr.State()
 
             self.toolbar = ui_toolbar.ToolBar(self)
 
@@ -33,21 +17,18 @@ class Main:
                 self.model_tab = ui_model.ModelTab(self)
 
             with gr.Tab("Training"):
-                pass
+                self.train_tab = ui_train.TrainTab(self)
 
             with gr.Tab("Visualization"):
                 self.vis_tab = ui_visual.VisualTab(self)
 
             # Load the list of loaded models
-            self.demo.load(self.get_dropdown_for_loaded_models, None, self.toolbar.dropdown_models)
+            self.demo.load(ui_model.ModelTab.get_dropdown_for_loaded_models, None, self.toolbar.dropdown_models)
+            self.demo.load(ui_model.ModelTab.get_dropdown_for_model_paths, None, self.model_tab.dropdown_paths)
+            self.demo.load(ui_model.ModelTab.get_dropdown_for_training_models, None, self.train_tab.dropdown_training_models)
+            self.demo.load(ui_train.TrainTab.get_dropdown_for_python_files, None, self.train_tab.dropdown_python_files)
 
-            # Load data into the canvas for neural network visualization
-            # and store the selected model for the current session
-            # This code is moved here from the toolbar since the vis tab is initialized after the toolbar
-            self.toolbar.dropdown_models.change(
-                self.select_model,
-                self.toolbar.dropdown_models,
-                [self.vis_tab.dropdown_menu.dropdown_input, self.vis_tab.dropdown_menu.state, self.selected_model]
-            )
+            self.toolbar.create_events()
+            self.model_tab.create_events()
 
         self.demo.launch()

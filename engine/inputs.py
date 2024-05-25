@@ -2,9 +2,9 @@ import numpy as np
 import io
 from PIL import Image
 
-from ui.data_classes.component_keys import component_keys
+from ui.data_classes.visual_component_keys import visual_component_keys
 from ui.data_classes.image_mode import image_mode
-from ui.data_classes.preset_keys import preset_keys
+from ui.data_classes.visual_preset_keys import visual_preset_keys
 from ui.dropdown_menu.preset_dropdown_menu import PresetDropdownMenu
 
 def get_image_input(file_name, shape, mode):
@@ -41,15 +41,15 @@ def get_csv_input(csv_string):
     return csv_np
 
 
-def get_input_by_state(input_name, shape, state):
+def get_visual_tab_input_by_state(input_name, shape, state):
     input_state = state[input_name]
 
     def get_image_type():
-        return input_state[component_keys.DROPDOWN_IMAGE_TYPE]
+        return input_state[visual_component_keys.DROPDOWN_IMAGE_TYPE]
 
     preset = input_state[PresetDropdownMenu.DROPDOWN_PRESET_NAME]
     match preset:
-        case preset_keys.FROM_IMAGE_FILE:
-            return get_image_input(input_state[component_keys.FILES][0], shape, get_image_type())
-        case preset_keys.FROM_CSV:
-            return get_csv_input(input_state[component_keys.TEXTBOX_CSV])
+        case visual_preset_keys.FROM_IMAGE_FILE:
+            return get_image_input(input_state[visual_component_keys.FILES][0], shape, get_image_type())
+        case visual_preset_keys.FROM_CSV:
+            return get_csv_input(input_state[visual_component_keys.TEXTBOX_CSV])

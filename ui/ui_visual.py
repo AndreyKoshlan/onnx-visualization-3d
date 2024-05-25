@@ -1,11 +1,11 @@
 import json
 import gradio as gr
 
-from engine.inputs import get_input_by_state
+from engine.inputs import get_visual_tab_input_by_state
 from engine.onnx_encoder import ONNXEncoder
-from ui import symbols, shared
+from ui import shared
 from ui.canvas_component import CanvasComponent
-from ui.ui_dropdown_menu import DropdownMenu
+from ui.ui_visual_menu import VisualMenu
 
 
 class VisualTab:
@@ -16,7 +16,7 @@ class VisualTab:
 
         inputs = {}
         for input_name in state:
-            inputs[input_name] = get_input_by_state(
+            inputs[input_name] = get_visual_tab_input_by_state(
                 input_name,
                 model.get_shape(input_name),
                 state
@@ -31,14 +31,11 @@ class VisualTab:
 
     def __init__(self, main):
         self.main = main
-        self.settings = gr.State()
 
         with gr.Row():
-            with gr.Column():
-                self.dropdown_menu = DropdownMenu(main)
+            with gr.Column(elem_classes=["menu"]):
+                self.dropdown_menu = VisualMenu(main)
                 with gr.Row(elem_classes=["activate-row"]):
-                    self.previous_button = gr.Button(symbols.previous_symbol, elem_classes=["small-button"])
-                    self.next_button = gr.Button(symbols.next_symbol, elem_classes=["small-button"])
                     self.activate_button = gr.Button("Activate", variant="primary")
 
             with gr.Column():

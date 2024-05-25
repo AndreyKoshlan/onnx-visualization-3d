@@ -11,5 +11,3 @@ Explore the visualization to gain insights into the structure and complexity of 
 """
 
 refresh_symbol = "🔄"
-previous_symbol = "⬅️"
-next_symbol = "➡️"

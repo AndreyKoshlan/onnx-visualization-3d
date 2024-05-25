@@ -5,9 +5,6 @@ import onnx
 import numpy as np
 import json
 
-from engine.models import Model
-
-
 class ONNXEncoder(json.JSONEncoder):
     """ Custom JSON encoder for ONNX and numpy types """
 
@@ -38,7 +35,7 @@ class ONNXEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
     @staticmethod
-    def get_payload(model: Model, inputs: dict, outputs: dict):
+    def get_payload(model, inputs: dict, outputs: dict):
         return {
             "graph": model.onnx_model.graph,
             "args": {

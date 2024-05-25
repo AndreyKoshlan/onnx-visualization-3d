@@ -1,23 +1,39 @@
 .toolbar-dropdown,
-.ui-dropdown,
 .slim-dropdown {
     background-color: transparent !important;
     border: none !important;
     padding: 0 !important;
 }
 
-.activate-row {
-    width: 50%;
-    align-self: flex-end;
-    margin-top: 8px;
-}
-
-.ui-dropdown {
-    margin-bottom: 8px;
-}
-
 .toolbar-dropdown .wrap {
     height: var(--size-10);
+}
+
+.activate-row {
+    display: flex;
+    align-self: flex-end;
+    flex-wrap: nowrap;
+    gap: 16px;
+    width: 50%;
+    margin-top: 16px;
+}
+
+.activate-row > * {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.menu-element {
+    padding: 0;
+}
+
+.menu {
+    padding: 8px;
+    gap: 24px;
+}
+
+.menu > .form {
+    gap: 24px;
 }
 
 .form {
@@ -31,9 +47,29 @@
     min-width: 0;
 }
 
+.medium-menu-button {
+    max-width: 5.8em;
+    max-height: 3em;
+    min-width: 0;
+    align-self: flex-end;
+}
+
+.small-menu-button {
+    max-width: 4.4em;
+    max-height: 3em;
+    min-width: 0;
+    align-self: flex-end;
+}
+
 .toolbar-button {
     height: var(--size-10);
     max-width: 5em;
+    min-width: 0;
+}
+
+.toolbar-small-button {
+    height: var(--size-10);
+    max-width: 4.4em;
     min-width: 0;
 }
 
@@ -42,17 +78,3 @@
     display: flex;
     align-items: flex-end;
 }
-
-/*
-gradio-app > :first-child {
-    padding-left: var(--size-4) !important;
-    padding-right: var(--size-4) !important;
-}
-
-.gradio-container {
-    max-width: 100% !important;
-    padding-top: 0 !important;
-    margin-left: auto !important;
-    margin-right: auto !important;
-}
-*/
