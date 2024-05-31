@@ -161,3 +161,9 @@ export function getLayersY(
 
     return layersY;
 }
+
+export function normalize(value: number, min: number, max: number, minResult: number = 0): number {
+    if (value <= min) return minResult;
+    if (value >= max) return 1;
+    return Math.max(minResult, (value - min) / (max - min));
+}

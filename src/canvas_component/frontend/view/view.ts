@@ -8,6 +8,7 @@ export class View {
     scene!: BABYLON.Scene;
     camera!: BABYLON.ArcRotateCamera;
     light!: BABYLON.Light;
+    light2!: BABYLON.Light;
     model!: Model;
 
     private createScene() {
@@ -23,7 +24,13 @@ export class View {
         );
         this.camera.attachControl(this.canvas, true);
 
-        this.light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 0), this.scene);
+        this.light = new BABYLON.HemisphericLight("light", new BABYLON.Vector3(1, 1, 1), this.scene);
+        this.light.specular = BABYLON.Color3.Black();
+        this.light.intensity = 0.9;
+
+        this.light2 = new BABYLON.HemisphericLight("light2", new BABYLON.Vector3(-1, -1, -1), this.scene);
+        this.light2.specular = BABYLON.Color3.Black();
+        this.light2.intensity = 0.9;
 
         this.engine.runRenderLoop(() => {
             this.scene.render();

@@ -7,7 +7,7 @@ class Artifacts:
         self,
         model: ort_train.Module,
         checkpoint_state: ort_train.CheckpointState,
-        optimizer: ort_train.optimizer,
+        optimizer: ort_train.Optimizer,
         device: str = ""
     ):
         self.model = model

@@ -1,14 +1,17 @@
 import * as BABYLON from 'babylonjs';
-import {getArrayShape, getDepth, getTotalValuesCount, reshapeTo3D} from "./layer-utils";
+import {getArrayShape, getDepth, getTotalValuesCount, normalize, reshapeTo3D} from "./layer-utils";
+import {Settings} from "./types";
 
 export class Layer {
     CUBE_SIZE = 1;
     CUBE_OFFSET = 1.5;
     SLICE_OFFSET = 4;
+    MIN_COLOR_VALUE = 0.15;
 
     scene: BABYLON.Scene;
     cube: BABYLON.Mesh;
     position: BABYLON.Vector3;
+    settings: Settings;
 
     reshapedArray: number[][][];
     shape: number[];
@@ -95,8 +98,12 @@ export class Layer {
             const matrix = BABYLON.Matrix.Translation(xPos, yPos, zPos);
             matrix.copyToArray(matricesBuffer, index * 16);
 
-            let intensity = value;
-            intensity = Math.max(0, Math.min(1, intensity));
+            const intensity = normalize(
+                value,
+                this.settings.normalization_value_min,
+                this.settings.normalization_value_max,
+                this.MIN_COLOR_VALUE
+            )
             colorBuffer.set([intensity, intensity, intensity, 1], index * 4);
         }
 
@@ -122,9 +129,10 @@ export class Layer {
         return result
     }
 
-    constructor(scene: BABYLON.Scene, array: any[]) {
+    constructor(scene: BABYLON.Scene, array: any[], settings: Settings) {
         this.scene = scene;
         this.position = BABYLON.Vector3.Zero();
+        this.settings = settings;
         this.cube = BABYLON.MeshBuilder.CreateBox("value", { size: this.CUBE_SIZE }, scene);
 
         this.reshapedArray = this.getReshapedArray(array);

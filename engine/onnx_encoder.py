@@ -35,7 +35,7 @@ class ONNXEncoder(json.JSONEncoder):
         return json.JSONEncoder.default(self, obj)
 
     @staticmethod
-    def get_payload(model, inputs: dict, outputs: dict):
+    def get_payload(model, inputs: dict, outputs: dict, settings: dict):
         return {
             "graph": model.onnx_model.graph,
             "args": {
@@ -43,7 +43,8 @@ class ONNXEncoder(json.JSONEncoder):
                 "outputs": {out.name: out for out in model.session.get_outputs()}
             },
             "inputs": inputs,
-            "outputs": outputs
+            "outputs": outputs,
+            "settings": settings
         }
 
     def encode_node_arg(self, arg: onnxruntime.NodeArg):

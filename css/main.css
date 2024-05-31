@@ -36,6 +36,11 @@
     gap: 24px;
 }
 
+.menu-accordion .form {
+    padding: 8px;
+    gap: 16px;
+}
+
 .form {
     background-color: transparent !important;
     border: none !important;
@@ -44,6 +49,11 @@
 
 .small-button {
     max-width: 4.4em;
+    min-width: 0;
+}
+
+.medium-button {
+    max-width: 5.8em;
     min-width: 0;
 }
 

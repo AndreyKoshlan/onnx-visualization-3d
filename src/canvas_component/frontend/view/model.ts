@@ -53,7 +53,8 @@ export class Model {
             id: "root",
             layoutOptions: {
                 'elk.algorithm': 'layered',
-                'elk.direction': 'DOWN'
+                'elk.direction': 'DOWN',
+                'spacing.nodeNodeBetweenLayers': this.data.settings.spacing_between_layers
             },
             children: [] as ElkNode[],
             edges: [] as ElkExtendedEdge[]
@@ -77,7 +78,7 @@ export class Model {
 
         const addLayers = (nodes: any) => {
             for (const name in nodes) {
-                layers[name] = new Layer(this.scene, nodes[name]);
+                layers[name] = new Layer(this.scene, nodes[name], data.settings);
             }
         };
 
@@ -104,7 +105,7 @@ export class Model {
 
             const type: ConnectionType = Connection.getType(node.operation_type);
             connections.push(
-                new Connection(this.scene, initializer, inputLayer, outputLayer, type)
+                new Connection(this.scene, initializer, inputLayer, outputLayer, type, data.settings)
             );
         }
 

@@ -55,9 +55,12 @@ class Model:
             case _:
                 raise Exception("Unknown extension")
 
-    def generate_artifacts(self):
-        frozen_params = []
-        requires_grad = [param.name for param in self.onnx_model.graph.initializer if param.data_type == 1]
+    def get_trainable_parameter_names(self):
+        return [param.name for param in self.onnx_model.graph.initializer if param.data_type == 1]
+
+    def generate_artifacts(self, requires_grad, frozen_params, loss, optimizer):
+        if len(requires_grad) == 0:
+            requires_grad = self.get_trainable_parameter_names()
 
         self.artifact_directory = artifacts_folder_controller.create_temp_folder()
 
@@ -65,8 +68,8 @@ class Model:
             self.onnx_model,
             requires_grad=requires_grad,
             frozen_params=frozen_params,
-            loss=ort_artifacts.LossType.CrossEntropyLoss,
-            optimizer=ort_artifacts.OptimType.AdamW,
+            loss=loss,
+            optimizer=optimizer,
             artifact_directory=self.artifact_directory
         )
 
@@ -81,9 +84,9 @@ class Model:
         node_names = [x.name for x in self.session.get_outputs()]
         outputs = self.session.run(node_names, inputs)
 
-        payload = ONNXEncoder.get_payload(self, inputs, dict(zip(node_names, outputs)))
+        payload = ONNXEncoder.get_payload(self, inputs, dict(zip(node_names, outputs)), {})
 
-        return json.dumps(payload, cls=ONNXEncoder)
+        return payload
 
     def train(self, num_epochs):
         train_loader = self.dataset.train_loader
@@ -114,7 +117,14 @@ class Model:
                 optimizer.step()
                 train_model.lazy_reset_grad()
 
+                if self.training_stopped:
+                    break
+
             print(f"[{self.path}] Epoch {epoch + 1} Loss {np.sum(total_loss) / len(train_loader)}")
+
+            if self.training_stopped:
+                print(f"[{self.path}] Stopped")
+                break
 
     def get_shape(self, input_name):
         inputs = self.session.get_inputs()
@@ -127,6 +137,7 @@ class Model:
         self.session = None
         self.onnx_model = None
         self.epoch_index = 0
+        self.training_stopped = True
         self.artifacts: Artifacts | None = None
         self.artifact_directory: Path | None = None
         self.dataset: DatasetContainer | None = None
@@ -147,11 +158,11 @@ class ModelList:
         model = Model(Path(path))
         model.load_onnx_model()
         if for_training:
-            model.generate_artifacts()
             self.train_list.append(model)
         else:
             model.load_session(model.onnx_model)
             self.loaded_list.append(model)
+        return model
 
     def refresh(self):
         self.model_paths = []

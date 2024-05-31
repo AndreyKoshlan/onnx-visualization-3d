@@ -1,5 +1,7 @@
 import {Layer} from "./layer";
 import BABYLON from "babylonjs";
+import {Settings} from "./types";
+import {normalize} from "./layer-utils";
 
 export enum ConnectionType {
     FullyConnected = "FULLY_CONNECTED",
@@ -10,10 +12,12 @@ export enum ConnectionType {
 export class Connection {
     CUBE_SIZE = 1;
     CUBE_SCALE = 0.07;
+    MIN_COLOR_VALUE = 0.5;
 
     scene: BABYLON.Scene;
     cube: BABYLON.Mesh;
     type: ConnectionType;
+    settings: Settings;
 
     inputLayer: Layer;
     outputLayer: Layer;
@@ -118,10 +122,14 @@ export class Connection {
 
             const matrix = this.getMatrix(pos1, pos2);
 
-            let intensity = value;
-            intensity = Math.max(0, Math.min(1, intensity));
+            const intensity = normalize(
+                value,
+                this.settings.normalization_value_min,
+                this.settings.normalization_value_max,
+                this.MIN_COLOR_VALUE
+            )
 
-            if (this.type !== ConnectionType.FullyConnected || intensity >= 0.1) {
+            if (this.type !== ConnectionType.FullyConnected || value >= this.settings.min_weight_threshold) {
                 matrix.copyToArray(matricesBuffer, bufferIndex * 16);
                 colorBuffer.set([intensity, intensity, intensity, 1], bufferIndex * 4);
                 bufferIndex++;
@@ -146,8 +154,9 @@ export class Connection {
     }
 
 
-    constructor(scene: BABYLON.Scene, array: any[], inputLayer: Layer, outputLayer: Layer, type: ConnectionType) {
+    constructor(scene: BABYLON.Scene, array: any[], inputLayer: Layer, outputLayer: Layer, type: ConnectionType, settings: Settings) {
         this.scene = scene;
+        this.settings = settings
         this.cube = BABYLON.MeshBuilder.CreateBox("connection", { size: this.CUBE_SIZE }, scene);
 
         this.array = array;
