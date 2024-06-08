@@ -1,13 +1,11 @@
-import {Layer} from "./layer";
 import BABYLON from "babylonjs";
-import {Settings} from "./types";
-import {normalize} from "./layer-utils";
 
-export enum ConnectionType {
-    FullyConnected = "FULLY_CONNECTED",
-    OneToOne = "ONE_TO_ONE",
-    None = "NONE"
-}
+import {Layer} from "./layer";
+import {normalize} from "./utils";
+import {getStrategy} from "./connection-core/strategy-factory";
+import {ConnectionStrategy} from "./connection-core/connection-strategies/connection-strategy";
+import {Settings} from "./types/data/settings";
+import {ConnectionType} from "./types/connection/connection-type";
 
 export class Connection {
     CUBE_SIZE = 1;
@@ -17,77 +15,13 @@ export class Connection {
     scene: BABYLON.Scene;
     cube: BABYLON.Mesh;
     type: ConnectionType;
+    strategy?: ConnectionStrategy;
     settings: Settings;
 
-    inputLayer: Layer;
-    outputLayer: Layer;
+    inputLayers: Layer[];
+    outputLayers: Layer[];
 
-    array: any[];
-
-    *iterateFullyConnected() {
-        const inputDim = this.inputLayer.getValuesCountInBatch();
-        const outputDim = this.outputLayer.getValuesCountInBatch();
-        const isShapeMatch = this.array[0] && this.array.length == inputDim && this.array[0].length == outputDim;
-
-        let index = 0;
-        for (const inputElement of this.inputLayer.iterate()) {
-            for (const outputElement of this.outputLayer.iterate()) {
-                const value = isShapeMatch ?
-                    this.array[inputElement.indices[1] * inputElement.indices[2]][outputElement.indices[1]*outputElement.indices[2]]
-                    : 0.5;
-                yield {
-                    value: value,
-                    input: inputElement,
-                    output: outputElement,
-                    index: index
-                }
-                index++;
-            }
-        }
-    }
-
-    *iterateOneToOne() {
-        let index = 0;
-        const outputIterator = this.outputLayer.iterate();
-        for (const inputElement of this.inputLayer.iterate()) {
-            const outputElement = outputIterator.next().value;
-            yield {
-                value: Math.abs(inputElement.value - outputElement!!.value),
-                input: inputElement,
-                output: outputElement!!,
-                index: index
-            }
-            index++;
-        }
-    }
-
-    getIterator(type: ConnectionType) {
-        switch (type) {
-            case ConnectionType.FullyConnected:
-                return this.iterateFullyConnected.bind(this);
-            case ConnectionType.OneToOne:
-                return this.iterateOneToOne.bind(this);
-            case ConnectionType.None:
-                return undefined;
-            default:
-                return undefined;
-        }
-    }
-
-    getConnectionCount(type: ConnectionType): number {
-        switch (type) {
-            case ConnectionType.FullyConnected:
-                return this.inputLayer.getValuesCount() * this.outputLayer.getValuesCount();
-            case ConnectionType.OneToOne:
-                if (this.inputLayer.getValuesCount() !== this.outputLayer.getValuesCount())
-                    throw new Error("The shape of input and output layers must match for one-to-one connections");
-                return this.inputLayer.getValuesCount();
-            case ConnectionType.None:
-                return 0;
-            default:
-                throw new Error("Invalid connection type");
-        }
-    }
+    initializers: any[];
 
     getMatrix(pos1: BABYLON.Vector3, pos2: BABYLON.Vector3): BABYLON.Matrix {
         const distance = BABYLON.Vector3.Distance(pos1, pos2);
@@ -103,18 +37,17 @@ export class Connection {
     }
 
     visualize() {
-        const iterator = this.getIterator(this.type);
-        if (iterator === undefined)
+        if (this.strategy === undefined)
             return;
 
         // TODO: Implement a dynamic array mechanism
         // The actual number of displayed instances may be less due to the intensity filter
-        let numInstances = this.getConnectionCount(this.type);
+        let numInstances = this.strategy.getConnectionCount();
         const matricesBuffer = new Float32Array(16 * numInstances);
         const colorBuffer = new Float32Array(4 * numInstances);
 
         let bufferIndex = 0;
-        for (const element of iterator()) {
+        for (const element of this.strategy.iterator()) {
             const {input, output, value} = element;
 
             const pos1 = new BABYLON.Vector3(...input.position);
@@ -141,27 +74,16 @@ export class Connection {
         this.cube.thinInstanceCount = bufferIndex;
     }
 
-    static getType(name: string) {
-        const fullyConnected = ["MatMul"];
-        const oneToOne = ["Reshape", "Softmax", "Relu", "Add"];
-        if (fullyConnected.includes(name)) {
-            return ConnectionType.FullyConnected;
-        }
-        if (oneToOne.includes(name)) {
-            return ConnectionType.OneToOne;
-        }
-        return ConnectionType.None;
-    }
-
-
-    constructor(scene: BABYLON.Scene, array: any[], inputLayer: Layer, outputLayer: Layer, type: ConnectionType, settings: Settings) {
+    constructor(scene: BABYLON.Scene, inputLayers: Layer[], outputLayers: Layer[], initializers: any[], type: ConnectionType, settings: Settings) {
         this.scene = scene;
         this.settings = settings
         this.cube = BABYLON.MeshBuilder.CreateBox("connection", { size: this.CUBE_SIZE }, scene);
 
-        this.array = array;
-        this.inputLayer = inputLayer;
-        this.outputLayer = outputLayer;
+        this.initializers = initializers;
+        this.inputLayers = inputLayers;
+        this.outputLayers = outputLayers;
         this.type = type;
+
+        this.strategy = getStrategy(this.type, this.inputLayers, this.outputLayers, this.initializers);
     }
 }

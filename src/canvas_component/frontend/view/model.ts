@@ -2,11 +2,13 @@ import * as BABYLON from 'babylonjs';
 import ELK, {ElkNode} from 'elkjs/lib/elk.bundled.js'
 import {ElkExtendedEdge} from "elkjs/lib/elk-api";
 
-import {Data} from "./types";
+import {Data} from "./types/data/data";
 import {Layer} from "./layer";
-import {getLayersY} from "./layer-utils";
-import {Connection, ConnectionType} from "./connection";
-import {getInitializerValue, iterateAllNodesIO} from "./graph";
+import {getLayersY} from "./layer-core/layer-utils";
+import {Connection} from "./connection";
+import {ConnectionType} from "./types/connection/connection-type";
+import {getInitializerValues, iterateAllNodesIO, iterateAllNodesLayers} from "./graph/graph";
+import {getConnectionType} from "./connection-core/strategy-factory";
 
 export class Model {
     scene: BABYLON.Scene;
@@ -54,7 +56,7 @@ export class Model {
             layoutOptions: {
                 'elk.algorithm': 'layered',
                 'elk.direction': 'DOWN',
-                'spacing.nodeNodeBetweenLayers': this.data.settings.spacing_between_layers
+                'spacing.nodeNodeBetweenLayers': this.data.settings.spacing_between_layers.toString()
             },
             children: [] as ElkNode[],
             edges: [] as ElkExtendedEdge[]
@@ -91,21 +93,26 @@ export class Model {
     createConnections(data: Data, layers: Record<string, Layer>): Connection[] {
         const connections: Connection[] = [];
 
-        for (const element of iterateAllNodesIO(data, layers)) {
-            const { inputName, outputName, nodeName } = element;
-
-            const inputLayer = layers[inputName];
-            const outputLayer = layers[outputName];
+        for (const element of iterateAllNodesLayers(data, layers)) {
+            const { inputs, outputs, nodeName } = element;
             const node = data.graph.nodes[nodeName];
 
-            const initializer = getInitializerValue(data, node);
-            if (initializer.length === 0) {
+            const initializers = getInitializerValues(data, node);
+            if (initializers.length === 0) {
                 console.log(`Initializer not found for node: ${nodeName}`);
             }
 
-            const type: ConnectionType = Connection.getType(node.operation_type);
+            const type: ConnectionType = getConnectionType(node.operation_type);
+
+            if (type == ConnectionType.None) {
+                console.log(`Unknown operation '${node.operation_type}' for node ${nodeName}`);
+            }
+
+            const inputLayers = inputs.map(inputName => layers[inputName]);
+            const outputLayers = outputs.map(outputName => layers[outputName]);
+
             connections.push(
-                new Connection(this.scene, initializer, inputLayer, outputLayer, type, data.settings)
+                new Connection(this.scene, inputLayers, outputLayers, initializers, type, data.settings)
             );
         }
 

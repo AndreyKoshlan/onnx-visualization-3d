@@ -72,7 +72,6 @@ class ModelTab:
 
     def __init__(self, main):
         self.main = main
-        gr.Markdown(symbols.start_message)
 
         with gr.Row():
             self.dropdown_paths = gr.Dropdown(

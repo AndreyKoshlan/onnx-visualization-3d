@@ -1,4 +1,5 @@
-import {Data, MappingType, NodesType, NodeType} from "./types";
+import {Data, NodesType, NodeType} from "../types/data/data";
+import {MappingType} from "../types/mapping-type";
 
 export function createNodeMapping(nodes: NodesType, mappingType: MappingType): Record<string, string[]> {
     const nodeMapping: Record<string, string[]> = {};
@@ -16,6 +17,24 @@ export function createNodeMapping(nodes: NodesType, mappingType: MappingType): R
     }
 
     return nodeMapping;
+}
+
+export function* iterateNodeLayers(node: NodeType, layers?: { [key: string]: any }) {
+    const filteredInputs = layers ? node.inputs.filter(inputName => inputName in layers) : node.inputs;
+    const filteredOutputs = layers ? node.outputs.filter(outputName => outputName in layers) : node.outputs;
+
+    if (filteredInputs.length > 0 && filteredOutputs.length > 0) {
+        yield { inputs: filteredInputs, outputs: filteredOutputs };
+    }
+}
+
+export function* iterateAllNodesLayers(data: Data, layers?: { [key: string]: any }) {
+    for (const nodeName of Object.keys(data.graph.nodes)) {
+        const node = data.graph.nodes[nodeName];
+        for (const layerInfo of iterateNodeLayers(node, layers)) {
+            yield { ...layerInfo, nodeName };
+        }
+    }
 }
 
 export function* iterateNodeIO(node: NodeType, layers?: { [key: string]: any} ) {
@@ -68,8 +87,8 @@ export function* iterateNodeBFS(data: Data) {
     }
 }
 
-export function getInitializerValue(data: Data, node: NodeType): any {
+export function getInitializerValues(data: Data, node: NodeType): any[] {
     const inputs = node.inputs;
-    const initializerName = inputs.find(input => data.graph.initializers.hasOwnProperty(input));
-    return initializerName ? data.graph.initializers[initializerName].array : [];
+    const initializerNames = inputs.filter(input => data.graph.initializers.hasOwnProperty(input));
+    return initializerNames.map(name => data.graph.initializers[name].array);
 }

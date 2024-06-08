@@ -1,6 +1,8 @@
-import * as BABYLON from 'babylonjs';
-import {getArrayShape, getDepth, getTotalValuesCount, normalize, reshapeTo3D} from "./layer-utils";
-import {Settings} from "./types";
+import * as BABYLON from "babylonjs";
+
+import {getArrayShape, getDepth, getTotalValuesCount, normalize, reshapeTo3D} from "./utils";
+import {Settings} from "./types/data/settings";
+import {LayerGeneratorItem} from "./types/layer/layer-generator-item";
 
 export class Layer {
     CUBE_SIZE = 1;
@@ -57,7 +59,7 @@ export class Layer {
         for (let sliceIndex = 0; sliceIndex < this.reshapedArray.length; sliceIndex++) {
             for (let y = 0; y < this.reshapedArray[sliceIndex].length; y++) {
                 for (let x = 0; x < this.reshapedArray[sliceIndex][y].length; x++) {
-                    yield {
+                    yield <LayerGeneratorItem>{
                         value: this.reshapedArray[sliceIndex][y][x],
                         position: this.getPosition(this.position, sliceIndex, y, x),
                         positionRelative: this.getPosition(zeroPoint, sliceIndex, y, x),
@@ -68,6 +70,13 @@ export class Layer {
                 }
             }
         }
+    }
+
+    getBatchCount(): number {
+        if (Array.isArray(this.reshapedArray)) {
+            return this.reshapedArray.length;
+        }
+        return 0;
     }
 
     getValuesCountInBatch(): number {

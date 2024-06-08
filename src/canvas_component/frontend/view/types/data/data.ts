@@ -1,3 +1,5 @@
+import {Settings} from "./settings";
+
 export interface Dim {
     denotation: string;
     dim_param: string;
@@ -48,24 +50,10 @@ export interface Args {
     outputs: { [key: string]: InputOutputDescriptor };
 }
 
-export interface Settings {
-    min_weight_threshold: number,
-    normalization_weight_min: number,
-    normalization_weight_max: number
-    normalization_value_min: number,
-    normalization_value_max: number
-    spacing_between_layers: number
-}
-
 export interface Data {
     graph: Graph;
     args: Args;
     inputs: { [key: string]: any[] };
     outputs: { [key: string]: any[] };
     settings: Settings;
-}
-
-export enum MappingType {
-    Inputs = "inputs",
-    Outputs = "outputs"
 }

@@ -1,6 +1,6 @@
 import * as BABYLON from 'babylonjs';
 import {Model} from "./model";
-import {Data} from "./types";
+import {Data} from "./types/data/data";
 
 export class View {
     canvas: HTMLCanvasElement;
