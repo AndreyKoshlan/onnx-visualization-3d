@@ -10,7 +10,9 @@ import {ConcatStrategy} from "./connection-strategies/concat-strategy";
 export function getStrategy(type: ConnectionType, inputLayers: Layer[], outputLayers: Layer[], initializers: any[] = []): ConnectionStrategy | undefined {
     switch (type) {
         case ConnectionType.FullyConnected:
-            return new FullyConnectedStrategy(inputLayers[0], outputLayers[0], initializers[0]);
+            return new FullyConnectedStrategy(inputLayers[0], outputLayers[0], initializers[0], true);
+        case ConnectionType.FullyConnectedGemm:
+            return new FullyConnectedStrategy(inputLayers[0], outputLayers[0], initializers[0], false);
         case ConnectionType.OneToOne:
             return new OneToOneStrategy(inputLayers[0], outputLayers[0]);
         case ConnectionType.Concat:

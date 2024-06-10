@@ -38,7 +38,7 @@ export class Model {
 
             const layerCenter = layerPosition.add(new BABYLON.Vector3(
                 layerSize[0] / 2,
-                layerSize[1] / 2,
+                -layerSize[1] / 2,
                 layerSize[2] / 2
             ));
 

@@ -6,6 +6,7 @@ import {getStrategy} from "./connection-core/strategy-factory";
 import {ConnectionStrategy} from "./connection-core/connection-strategies/connection-strategy";
 import {Settings} from "./types/data/settings";
 import {ConnectionType} from "./types/connection/connection-type";
+import {faceColorsConnections} from "./layer-core/face-colors";
 
 export class Connection {
     CUBE_SIZE = 1;
@@ -62,7 +63,9 @@ export class Connection {
                 this.MIN_COLOR_VALUE
             )
 
-            if (this.type !== ConnectionType.FullyConnected || value >= this.settings.min_weight_threshold) {
+            const allowedSkipLayers = [ConnectionType.FullyConnected, ConnectionType.FullyConnectedGemm];
+
+            if (!allowedSkipLayers.includes(this.type) || value >= this.settings.min_weight_threshold) {
                 matrix.copyToArray(matricesBuffer, bufferIndex * 16);
                 colorBuffer.set([intensity, intensity, intensity, 1], bufferIndex * 4);
                 bufferIndex++;
@@ -76,8 +79,13 @@ export class Connection {
 
     constructor(scene: BABYLON.Scene, inputLayers: Layer[], outputLayers: Layer[], initializers: any[], type: ConnectionType, settings: Settings) {
         this.scene = scene;
-        this.settings = settings
-        this.cube = BABYLON.MeshBuilder.CreateBox("connection", { size: this.CUBE_SIZE }, scene);
+        this.settings = settings;
+
+        this.cube = BABYLON.MeshBuilder.CreateBox("connection", { size: this.CUBE_SIZE, faceColors: faceColorsConnections }, scene);
+
+        const material = new BABYLON.StandardMaterial("material", scene);
+        material.alpha = 0.75;
+        this.cube.material = material;
 
         this.initializers = initializers;
         this.inputLayers = inputLayers;

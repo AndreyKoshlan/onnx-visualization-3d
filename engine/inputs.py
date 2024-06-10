@@ -19,16 +19,26 @@ def get_image_input(file_names, shape, mode):
             image = image.convert('RGBA')
         elif mode == image_mode.LOAD_AS_GRAYSCALE:
             image = image.convert('L')
-        elif mode == image_mode.LOAD_GRAYSCALE_AS_SINGLE_CHANNEL:
+        elif mode == image_mode.LOAD_GRAYSCALE_AS_3D_ARRAY:
+            image = image.convert('L')
+        elif mode == image_mode.LOAD_GRAYSCALE_AS_FLAT_ARRAY:
             image = image.convert('L')
 
-        image = image.resize((shape[1], shape[2]))
+        if len(shape) == 2:
+            width, height = image.size
+            new_width = int(np.sqrt(shape[1] * width / height))
+            new_height = shape[1] // new_width
+            image = image.resize((new_width, new_height))
+        elif len(shape) == 3:
+            image = image.resize((shape[1], shape[2]))
 
         image_np = np.array(image).astype(np.float32)
         image_np = image_np / 255.0
 
-        if mode == image_mode.LOAD_GRAYSCALE_AS_SINGLE_CHANNEL:
+        if mode == image_mode.LOAD_GRAYSCALE_AS_3D_ARRAY:
             image_np = np.expand_dims(image_np, axis=-1)
+        elif mode == image_mode.LOAD_GRAYSCALE_AS_FLAT_ARRAY:
+            image_np = image_np.flatten()
 
         images_np.append(image_np)
 
@@ -51,9 +61,15 @@ def get_visual_tab_input_by_state(input_name, shape, state):
     def get_image_type():
         return input_state[visual_component_keys.DROPDOWN_IMAGE_TYPE]
 
+    def get_image_shape():
+        line = input_state[visual_component_keys.TEXTBOX_IMAGE_SHAPE].replace(" ", "")
+        if len(line) == 0:
+            return shape
+        return [1] + list(map(int, line.split(",")))
+
     preset = input_state[PresetDropdownMenu.DROPDOWN_PRESET_NAME]
     match preset:
         case visual_preset_keys.FROM_IMAGE_FILE:
-            return get_image_input(input_state[visual_component_keys.FILES], shape, get_image_type())
+            return get_image_input(input_state[visual_component_keys.FILES], get_image_shape(), get_image_type())
         case visual_preset_keys.FROM_CSV:
             return get_csv_input(input_state[visual_component_keys.TEXTBOX_CSV])

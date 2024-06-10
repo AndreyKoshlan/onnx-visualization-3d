@@ -32,8 +32,13 @@ export class FullyConnectedStrategy extends ConnectionStrategy {
             this.inputLayer.getBatchCount();
     }
 
-    constructor(inputLayer: Layer, outputLayer: Layer, matrix: any[]) {
+    constructor(inputLayer: Layer, outputLayer: Layer, matrix: any[], inputFirst: boolean = true) {
         super();
+
+        if (!inputFirst) {
+            [inputLayer, outputLayer] = [outputLayer, inputLayer];
+        }
+
         this.inputLayer = inputLayer;
         this.outputLayer = outputLayer;
         this.matrix = matrix;

@@ -3,6 +3,7 @@ import * as BABYLON from "babylonjs";
 import {getArrayShape, getDepth, getTotalValuesCount, normalize, reshapeTo3D} from "./utils";
 import {Settings} from "./types/data/settings";
 import {LayerGeneratorItem} from "./types/layer/layer-generator-item";
+import {faceColorsLayers} from "./layer-core/face-colors";
 
 export class Layer {
     CUBE_SIZE = 1;
@@ -142,7 +143,8 @@ export class Layer {
         this.scene = scene;
         this.position = BABYLON.Vector3.Zero();
         this.settings = settings;
-        this.cube = BABYLON.MeshBuilder.CreateBox("value", { size: this.CUBE_SIZE }, scene);
+
+        this.cube = BABYLON.MeshBuilder.CreateBox("value", { size: this.CUBE_SIZE, faceColors: faceColorsLayers }, scene);
 
         this.reshapedArray = this.getReshapedArray(array);
         this.shape = getArrayShape(this.reshapedArray);

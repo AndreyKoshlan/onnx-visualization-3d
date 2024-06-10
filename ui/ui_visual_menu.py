@@ -12,6 +12,10 @@ class VisualMenu(PresetDropdownMenu):
         return {
             component_keys.DROPDOWN_IMAGE_TYPE: gr.Dropdown(choices=list(asdict(image_mode).values()),
                                                             label="Select image mode", interactive=True),
+            component_keys.TEXTBOX_IMAGE_SHAPE: gr.Textbox(
+                label="Shape of the image (comma-separated values, leave blank to use default shape)",
+                max_lines=1,
+                interactive=True),
             component_keys.FILES: gr.File(file_count="multiple", interactive=True),
             component_keys.TEXTBOX_CSV: gr.Textbox(label="CSV", interactive=True)
         }
@@ -20,7 +24,11 @@ class VisualMenu(PresetDropdownMenu):
         self.main = main
 
         presets = {
-            preset_keys.FROM_IMAGE_FILE: [component_keys.FILES, component_keys.DROPDOWN_IMAGE_TYPE],
+            preset_keys.FROM_IMAGE_FILE: [
+                component_keys.TEXTBOX_IMAGE_SHAPE,
+                component_keys.DROPDOWN_IMAGE_TYPE,
+                component_keys.FILES
+            ],
             preset_keys.FROM_CSV: [component_keys.TEXTBOX_CSV]
         }
 
